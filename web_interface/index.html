@@ -1,0 +1,234 @@
+<html>
+<head>
+    <script src="jquery.min.js"></script>
+
+<script src="js/Chart.js"></script>
+<script src="transit.js"></script>
+    <script>
+    var json;
+        window.onload=function(){
+        dragIt(1);
+        
+        };
+    function get_rec()
+        {
+            $("#progress").animate({width: "70%"},1500);
+            var skills=$("#skills").val();
+            var type=$('input[name=type]:checked').val();
+            $("#tagLine").transition({ opacity: 0});
+        $.ajax({url: "http://192.168.1.23/jbr/get_it.php?skills=" + encodeURIComponent(skills) + "&type=" + type,
+                success: function(data){
+                    $('#cont').transition({ opacity: 1});
+                    $("#progress").clearQueue();
+                    $("#progress").stop();
+                    $("#progress").animate({width: "100%"},500,function(){$("#progress").css("width","0%");});
+                    var ar=data.split("<br/>");
+
+                    json = ar[ar.length-1].replace(",]}", "]}");
+                    js=JSON.parse(json);
+                    
+                    draw_chart();
+                    $("#rec").html("");
+                    $("#rec").append('<h2 style="padding-top:10px;text-align:center; color:white;text-shadow: black 0px 0px 10px; border-bottom: solid thin grey;padding-bottom:10px;">Recommendations for you !</h2>');
+                    $("#rec").append('<table></table>');  
+                    if(type=="companies") 
+                    for(var i=0;i<ar.length-2;i++)
+                      $("#rec > table").append("<tr><td ><img src='icons/company.png'/></td><td style='color: rgb(178, 157, 157);'>" + ar[i] + "</td></tr>");
+                    else
+                        for(var i=0;i<ar.length-1;i++)
+                      $("#rec > table").append("<tr><td><img src='icons/seeker.png'/></td><td style='color: rgb(178, 157, 157);'>" + ar[i] + "</td></tr>");
+
+        }});
+        }
+
+function dragIt()
+        {
+            $('.radio').transition({ opacity: 1 ,delay: 500},1000);
+       $('#top').transition({ y: '60px' },1000,'easeOutQuint');
+           
+        }
+        function draw_chart()
+        {
+            
+
+
+
+var dat=[];
+for(var i=0;i<js.dataObj.length;i++)
+{
+    dat[i]={
+        value: parseInt(js.dataObj[i].value),
+        color: js.dataObj[i].color,
+        highlight: "#c9c7c7",
+        label: js.dataObj[i].skill
+    };
+}
+            
+//document.getElementById("myChart").value="";
+$("#canvasCont").html("");
+$("#canvasCont").html('<canvas id="myChart" height="300px" width="300px" style="margin:auto">chart</canvas>');
+Chart.defaults.global.responsive = true;
+var ctx = document.getElementById("myChart").getContext("2d");
+var myLineChart = new Chart(ctx).Doughnut(dat,  {
+animateScale: true
+
+});
+            
+
+        }
+        //myLineChart.generateLegend("hello");
+    </script>
+    <style>
+        body
+        {
+        font-family:arial,sans-serif-light,sans-serif;
+           /* background-color: #6CC9FF;*/
+            background-color:rgb(220,230,240);
+            margin: 0;
+            padding-bottom: 50px;
+        }
+        #top
+        {
+            position: fixed;left:0px;
+        width: 100%;height:60px; text-align:center;
+            background-color:rgba(0, 0, 0, 0.3);
+            /*margin-top: -60px;*/
+            top:-60px; 
+        }
+        #top > form,delay: 1000
+        {
+        height: 100%; margin:auto; /*width: 544px;*/width:100%;
+            margin-bottom:5px;
+        }
+        #top > form > button
+        {
+        padding:0; height:40px;  float:left
+        }
+        #skills
+        {
+        /*width:544px;*/width:100%; height:55px; float:left; padding-left:10px; font-size:20px;
+           background: transparent;outline: none;
+            autocomplete="off";
+            border:0;
+            color: white;
+        }
+    #rec
+        {
+        width:95%;
+            min-height: 400px;
+           box-shadow: black 0px 0px 10px 0px;
+
+        /*background-color: #C4C4C4;*/
+            background-color: #205081;
+            /*border-radius:10px;*/
+        }
+        #rec > h1
+        {
+        width:100%; text-align:center
+        }
+        #rec > table
+        {
+        border-collapse:separate; 
+        border-spacing:1em;
+        }
+        #rec > table > tr
+        {
+        
+        }
+        #cont
+        {
+        margin:auto;
+            width:100%;
+            margin-top: 50px;
+            opacity: 0;
+            min-height: 500px;
+        }
+        #cont td
+        {
+        
+        }
+        #myChart
+        {
+            cursor: pointer;
+        }
+        ::-webkit-input-placeholder {
+   color: white;
+}
+
+:-moz-placeholder { /* Firefox 18- */
+   color: white; 
+}
+
+::-moz-placeholder {  /* Firefox 19+ */
+   color: white; 
+}
+
+:-ms-input-placeholder {  
+   color: white; 
+}
+        #progress
+        {
+        width:0%;
+            height:5px;
+            overflow: hidden;
+            background-color: #FC0;
+        }
+        .radio
+        {
+        opacity:0;
+       }
+        #tagLine
+        {
+        
+        width: 80%; color:#4B8CB2; opacity: 1;top: 40%;left:10%; text-align:center; font-size: 6vw; position:absolute; z-index: -1000;}
+    </style>
+</head>
+    <body>
+        <div id="top" >
+
+        <form>
+        <input id="skills" type="text" name="skills" placeholder=" e.g. python, c, java and ruby" onfocus="$(this).val(' ');" onblur="$(this).val('');"/>
+               <button type="submit" style="
+            border:0;display: none;" onclick="get_rec(); return false;" onblur="dragIt(0);"><img src="icons/search.png" style="height: 40px;"/></button>
+            <div id="progress"></div>
+            </form>
+            
+            
+            <!--<select id="type">
+            <option value="companies">
+            COMPANY
+            </option>
+            <option value="seekers">
+            JOB SEEKER
+            </option>
+            </select>-->
+        </div>
+        <div class="radio" style="width:50%; text-align:center; margin:auto; margin-top:70px;">
+        <input type="radio"  name="type" value="companies" checked/><span class="radio">Company</span>
+            <input style="margin-left:50px;"  type="radio" name="type" value="seekers"/><span class="radio">Job Seeker</span>
+            </div>
+        <table id="cont">
+            <tr>
+                
+                 <td style="padding-left:50px; padding-right:50px; width: 30%; vertical-align:top; padding-top: 100px;">
+        <div id="canvasCont" style="test-align: center; width:80%; margin:auto;">
+        
+        </div></td>
+                
+                <td  style="width: 70%;">
+        <div id="rec">
+            
+            <h1 style="color:white;text-shadow: black 0px 0px 10px">Happy future</h1>
+        </div>
+           </td>
+                 </tr>
+        </table>
+        <div style="height: 50px; "></div>
+        <script>
+
+        </script>
+        <div id="tagLine" style="">
+            Job Recommender
+        </div>
+    </body>
+</html>
